@@ -4,7 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 const TOTAL_CELLS = 20;
 
 export function Progress() {
-  const { status, progress, error } = useAppStore();
+  const { status, progress, error, mode } = useAppStore();
 
   if (status === 'idle' || status === 'done' || status === 'ready_to_convert') {
     return null;
@@ -29,7 +29,11 @@ export function Progress() {
       <div className="flex items-center gap-2 mb-3">
         <Activity className="w-4 h-4 text-teal-300 animate-pulse" />
         <h2 className="pixel-font text-lg text-white tracking-[0.18em]">
-          {status === 'extracting' ? 'EXTRACTING AUDIO…' : 'APPLYING 8-BIT FILTERS…'}
+          {status === 'extracting'
+            ? 'EXTRACTING AUDIO…'
+            : mode === 'synth'
+              ? 'TRANSCRIBING MELODY…'
+              : 'APPLYING 8-BIT FILTERS…'}
         </h2>
         <span className="ml-auto pixel-font text-teal-300 tracking-widest neon-text-accent">{progress}%</span>
       </div>

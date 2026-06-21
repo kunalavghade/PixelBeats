@@ -1,6 +1,7 @@
 import { Download, Play } from 'lucide-react';
 import { useAppStore, type Preset, type Mode } from '../store/useAppStore';
 import { useFFmpeg } from '../hooks/useFFmpeg';
+import { useChiptuneSynth } from '../hooks/useChiptuneSynth';
 import { cn } from '../utils';
 
 type PresetMeta = { id: Preset; label: string; desc: string; color: string; icon: string };
@@ -13,10 +14,10 @@ const presets: PresetMeta[] = [
   { id: 'Custom',  label: 'CUSTOM',  desc: 'TUNE IT',         color: '#a78bfa', icon: '🎛️' },
 ];
 
-const modes: { id: Mode; label: string; disabled?: boolean }[] = [
-  { id: 'lofi', label: 'LO-FI' },
-  { id: 'chiptune', label: 'CHIPTUNE' },
-  { id: 'synth', label: 'SYNTH (SOON)', disabled: true },
+const modes: { id: Mode; label: string; tooltip?: string }[] = [
+  { id: 'lofi', label: 'LO-FI', tooltip: 'Crunchy bit-reduced filter chain' },
+  { id: 'chiptune', label: 'CHIPTUNE', tooltip: 'Aggressive bitcrush + tremolo' },
+  { id: 'synth', label: 'SYNTH', tooltip: 'Melody → chip-wave resynthesis (best with vocal lines)' },
 ];
 
 export function Controls() {
@@ -25,9 +26,15 @@ export function Controls() {
     customSettings, setCustomSettings, mode, setMode,
   } = useAppStore();
   const { isLoaded, convertAudio } = useFFmpeg();
+  const { synthesize } = useChiptuneSynth();
 
   const handleConvert = () => {
-    if (file) convertAudio(file.name, preset, mode, customSettings);
+    if (!file) return;
+    if (mode === 'synth') {
+      synthesize(file, preset, customSettings);
+    } else {
+      convertAudio(file.name, preset, mode, customSettings);
+    }
   };
 
   const handleDownload = () => {
@@ -57,10 +64,10 @@ export function Controls() {
           {modes.map((m) => (
             <button
               key={m.id}
-              disabled={m.disabled || busy}
-              onClick={() => !m.disabled && setMode(m.id)}
-              className={cn(mode === m.id && 'active', m.disabled && 'opacity-40 cursor-not-allowed')}
-              title={m.disabled ? 'Coming soon: melody extraction + chip-wave resynthesis' : undefined}
+              disabled={busy}
+              onClick={() => setMode(m.id)}
+              className={cn(mode === m.id && 'active')}
+              title={m.tooltip}
             >
               {m.label}
             </button>

@@ -1,9 +1,12 @@
 import type React from 'react';
 import { useCallback, useState } from 'react';
-import { UploadCloud, FileAudio } from 'lucide-react';
+import { UploadCloud, FileAudio, Sparkles } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { useFFmpeg } from '../hooks/useFFmpeg';
+import { generateSampleTrack } from '../lib/sampleGenerator';
 import { cn } from '../utils';
+
+const SAMPLE_FILENAME = 'pixelbeats_demo.wav';
 
 export function Dropzone() {
   const { setFile, file, status } = useAppStore();
@@ -43,6 +46,24 @@ export function Dropzone() {
       }
     },
     [setFile, extractOriginal]
+  );
+
+  const [loadingSample, setLoadingSample] = useState(false);
+  const loadSample = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (loadingSample) return;
+      setLoadingSample(true);
+      try {
+        const blob = await generateSampleTrack();
+        const sampleFile = new File([blob], SAMPLE_FILENAME, { type: 'audio/wav' });
+        setFile(sampleFile);
+        extractOriginal(sampleFile);
+      } finally {
+        setLoadingSample(false);
+      }
+    },
+    [loadingSample, setFile, extractOriginal]
   );
 
   if (file && (status === 'extracting' || status === 'converting' || status === 'ready_to_convert')) {
@@ -101,12 +122,29 @@ export function Dropzone() {
           {file ? 'CLICK OR DRAG TO REPLACE FILE' : 'DROP MP4 OR AUDIO • OR CLICK TO BROWSE'}
         </p>
 
-        {file && (
+        {file ? (
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 pixel-font text-teal-300 tracking-widest"
                style={{ fontSize: 'clamp(10px, 1.1vw, 12px)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
             {(file.size / (1024 * 1024)).toFixed(2)} MB LOADED
           </div>
+        ) : (
+          <button
+            type="button"
+            onClick={loadSample}
+            disabled={loadingSample}
+            className={cn(
+              'mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-lg pixel-font tracking-[0.2em]',
+              'bg-violet-600/20 border-2 border-violet-500/60 text-violet-200',
+              'hover:bg-violet-600/30 hover:border-violet-400 hover:text-white',
+              'transition-colors shadow-[0_0_18px_rgba(139,92,246,0.35)]',
+              loadingSample && 'opacity-60 cursor-not-allowed'
+            )}
+            style={{ fontSize: 'clamp(11px, 1.3vw, 13px)' }}
+          >
+            <Sparkles className="w-4 h-4" />
+            {loadingSample ? 'GENERATING SAMPLE…' : 'TRY DEMO TRACK'}
+          </button>
         )}
       </div>
     </div>
