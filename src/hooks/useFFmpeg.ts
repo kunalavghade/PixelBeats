@@ -43,7 +43,7 @@ export function useFFmpeg() {
   }, [setError, setProgress]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
