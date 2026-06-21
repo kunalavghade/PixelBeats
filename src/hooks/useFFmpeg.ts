@@ -1,8 +1,8 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
-import coreURL from '../assets/ffmpeg-core.js?url';
-import wasmURL from '../assets/ffmpeg-core.wasm?url';
+import coreURL from '@ffmpeg/core?url';
+import wasmURL from '@ffmpeg/core/wasm?url';
 import { useAppStore, type Preset } from '../store/useAppStore';
 
 const presetSampleRates: Record<Preset, string> = {
