@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import coreURL from '@ffmpeg/core?url';
@@ -13,34 +13,36 @@ const presetSampleRates: Record<Preset, string> = {
   Custom: '16000',
 };
 
+let ffmpegInstance: FFmpeg | null = null;
+let loadPromise: Promise<FFmpeg> | null = null;
+
+function getFFmpeg(): Promise<FFmpeg> {
+  if (loadPromise) return loadPromise;
+  loadPromise = (async () => {
+    const ffmpeg = new FFmpeg();
+    ffmpeg.on('progress', ({ progress }) => {
+      useAppStore.getState().setProgress(Math.round(progress * 100));
+    });
+    await ffmpeg.load({ coreURL, wasmURL });
+    ffmpegInstance = ffmpeg;
+    return ffmpeg;
+  })();
+  return loadPromise;
+}
+
 export function useFFmpeg() {
-  const ffmpegRef = useRef<FFmpeg | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(ffmpegInstance !== null);
   const { setStatus, setProgress, setError, setConvertedAudioUrl, setAudioUrl } = useAppStore();
 
   const load = useCallback(async () => {
-    if (ffmpegRef.current) return;
-    
     try {
-      const ffmpeg = new FFmpeg();
-      ffmpegRef.current = ffmpeg;
-
-      ffmpeg.on('progress', ({ progress }) => {
-        // Progress goes from 0 to 1
-        setProgress(Math.round(progress * 100));
-      });
-
-      await ffmpeg.load({
-        coreURL,
-        wasmURL,
-      });
-      
+      await getFFmpeg();
       setIsLoaded(true);
     } catch (err) {
       console.error('Error loading ffmpeg', err);
       setError('Failed to load FFmpeg. Please ensure you are not blocking WebAssembly.');
     }
-  }, [setError, setProgress]);
+  }, [setError]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -48,13 +50,13 @@ export function useFFmpeg() {
   }, [load]);
 
   const extractOriginal = async (file: File) => {
-    if (!isLoaded || !ffmpegRef.current) {
+    if (!isLoaded || !ffmpegInstance) {
       setError('FFmpeg is not loaded yet');
       return;
     }
 
-    const ffmpeg = ffmpegRef.current;
-    
+    const ffmpeg = ffmpegInstance;
+
     try {
       setStatus('extracting');
       setProgress(0);
@@ -82,12 +84,12 @@ export function useFFmpeg() {
   };
 
   const convertAudio = async (fileName: string, preset: Preset, customSettings: { sampleRate: number }) => {
-    if (!isLoaded || !ffmpegRef.current) {
+    if (!isLoaded || !ffmpegInstance) {
       setError('FFmpeg is not loaded yet');
       return;
     }
 
-    const ffmpeg = ffmpegRef.current;
+    const ffmpeg = ffmpegInstance;
 
     try {
       setStatus('converting');
