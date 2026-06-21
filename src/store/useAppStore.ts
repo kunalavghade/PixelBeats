@@ -7,9 +7,10 @@ export interface AppState {
   videoUrl: string | null;
   audioUrl: string | null;
   convertedAudioUrl: string | null;
-  status: 'idle' | 'extracting' | 'converting' | 'done' | 'error';
+  status: 'idle' | 'extracting' | 'ready_to_convert' | 'converting' | 'done' | 'error';
   progress: number;
   preset: Preset;
+  customSettings: { sampleRate: number };
   error: string | null;
   
   setFile: (file: File | null) => void;
@@ -19,6 +20,7 @@ export interface AppState {
   setStatus: (status: AppState['status']) => void;
   setProgress: (progress: number) => void;
   setPreset: (preset: Preset) => void;
+  setCustomSettings: (settings: { sampleRate: number }) => void;
   setError: (error: string | null) => void;
   reset: () => void;
 }
@@ -31,6 +33,7 @@ export const useAppStore = create<AppState>((set) => ({
   status: 'idle',
   progress: 0,
   preset: 'NES',
+  customSettings: { sampleRate: 16000 },
   error: null,
 
   setFile: (file) => set({ file }),
@@ -40,6 +43,7 @@ export const useAppStore = create<AppState>((set) => ({
   setStatus: (status) => set({ status }),
   setProgress: (progress) => set({ progress }),
   setPreset: (preset) => set({ preset }),
+  setCustomSettings: (settings) => set({ customSettings: settings }),
   setError: (error) => set({ error }),
   reset: () => set({
     file: null,
@@ -48,6 +52,8 @@ export const useAppStore = create<AppState>((set) => ({
     convertedAudioUrl: null,
     status: 'idle',
     progress: 0,
+    preset: 'NES',
+    customSettings: { sampleRate: 16000 },
     error: null,
   }),
 }));

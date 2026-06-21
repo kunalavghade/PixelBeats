@@ -47,7 +47,7 @@ export function useFFmpeg() {
     load();
   }, [load]);
 
-  const processVideo = async (file: File, preset: Preset) => {
+  const extractOriginal = async (file: File) => {
     if (!isLoaded || !ffmpegRef.current) {
       setError('FFmpeg is not loaded yet');
       return;
@@ -61,7 +61,6 @@ export function useFFmpeg() {
       
       const fileName = file.name;
       const originalAudioName = 'original.mp3';
-      const convertedAudioName = 'converted.wav';
 
       // Write the file to memory
       await ffmpeg.writeFile(fileName, await fetchFile(file));
@@ -72,13 +71,32 @@ export function useFFmpeg() {
       const originalBlob = new Blob([new Uint8Array(originalData as Uint8Array)], { type: 'audio/mpeg' });
       setAudioUrl(URL.createObjectURL(originalBlob));
 
+      setStatus('ready_to_convert');
+      setProgress(100);
+
+    } catch (err) {
+      console.error('Error during extraction', err);
+      setError('An error occurred during audio extraction.');
+      setStatus('error');
+    }
+  };
+
+  const convertAudio = async (fileName: string, preset: Preset, customSettings: { sampleRate: number }) => {
+    if (!isLoaded || !ffmpegRef.current) {
+      setError('FFmpeg is not loaded yet');
+      return;
+    }
+
+    const ffmpeg = ffmpegRef.current;
+
+    try {
       setStatus('converting');
       setProgress(0);
 
-      const sampleRate = presetSampleRates[preset];
+      const convertedAudioName = 'converted.wav';
+      const sampleRate = preset === 'Custom' ? customSettings.sampleRate.toString() : presetSampleRates[preset];
 
       // Convert to 8-bit retro sound
-      // We extract audio, downmix to mono, set sample format to unsigned 8-bit, and set sample rate
       await ffmpeg.exec([
         '-i', fileName,
         '-vn', // no video
@@ -102,5 +120,5 @@ export function useFFmpeg() {
     }
   };
 
-  return { isLoaded, processVideo };
+  return { isLoaded, extractOriginal, convertAudio };
 }

@@ -122,7 +122,7 @@ function AudioVisualizer({ audioUrl, color }: { audioUrl: string | null; color: 
 export function Player() {
   const { status, audioUrl, convertedAudioUrl } = useAppStore();
 
-  if (status === 'idle' || status === 'extracting' || status === 'converting' && !audioUrl) {
+  if (status === 'idle' || status === 'extracting' || (status === 'converting' && !audioUrl)) {
     return null;
   }
 

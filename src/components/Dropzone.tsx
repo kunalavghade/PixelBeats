@@ -2,10 +2,12 @@ import type React from 'react';
 import { useCallback, useState } from 'react';
 import { UploadCloud, FileAudio } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { useFFmpeg } from '../hooks/useFFmpeg';
 import { cn } from '../utils';
 
 export function Dropzone() {
   const { setFile, file, status } = useAppStore();
+  const { extractOriginal } = useFFmpeg();
   const [isDragActive, setIsDragActive] = useState(false);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -22,26 +24,31 @@ export function Dropzone() {
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragActive(false);
-      if (status !== 'idle' && status !== 'done' && status !== 'error') return;
+      // Let user upload again even if done or error
+      if (status !== 'idle' && status !== 'done' && status !== 'error' && status !== 'ready_to_convert') return;
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        setFile(e.dataTransfer.files[0]);
+        const selectedFile = e.dataTransfer.files[0];
+        setFile(selectedFile);
+        extractOriginal(selectedFile);
       }
     },
-    [setFile, status]
+    [setFile, extractOriginal, status]
   );
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        setFile(e.target.files[0]);
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
+        extractOriginal(selectedFile);
       }
     },
-    [setFile]
+    [setFile, extractOriginal]
   );
 
-  if (file && (status === 'extracting' || status === 'converting')) {
-    return null; // hide dropzone when processing
+  if (file && (status === 'extracting' || status === 'converting' || status === 'ready_to_convert')) {
+    return null; // hide dropzone when processing or ready
   }
 
   return (
