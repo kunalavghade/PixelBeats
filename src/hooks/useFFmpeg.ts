@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { fetchFile } from '@ffmpeg/util';
 import { useAppStore, type Preset } from '../store/useAppStore';
 
 const presetSampleRates: Record<Preset, string> = {
@@ -30,8 +30,8 @@ export function useFFmpeg() {
 
       const baseURL = import.meta.env.BASE_URL;
       await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}ffmpeg-core.wasm`, 'application/wasm'),
+        coreURL: `${baseURL}ffmpeg-core.js`,
+        wasmURL: `${baseURL}ffmpeg-core.wasm`,
       });
       
       setIsLoaded(true);
