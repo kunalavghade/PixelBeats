@@ -1,6 +1,8 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import coreURL from '../assets/ffmpeg-core.js?url';
+import wasmURL from '../assets/ffmpeg-core.wasm?url';
 import { useAppStore, type Preset } from '../store/useAppStore';
 
 const presetSampleRates: Record<Preset, string> = {
@@ -28,10 +30,9 @@ export function useFFmpeg() {
         setProgress(Math.round(progress * 100));
       });
 
-      const baseURL = import.meta.env.BASE_URL;
       await ffmpeg.load({
-        coreURL: `${baseURL}ffmpeg-core.js`,
-        wasmURL: `${baseURL}ffmpeg-core.wasm`,
+        coreURL,
+        wasmURL,
       });
       
       setIsLoaded(true);
