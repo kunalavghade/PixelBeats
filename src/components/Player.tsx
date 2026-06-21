@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Volume2 } from 'lucide-react';
+import { Volume2, Download } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 function AudioVisualizer({ audioUrl, color }: { audioUrl: string | null; color: string }) {
@@ -135,15 +135,39 @@ export function Player() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-2">
-          <h3 className="pixel-font text-slate-400 mb-2">ORIGINAL AUDIO</h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="pixel-font text-slate-400">ORIGINAL AUDIO</h3>
+            {audioUrl && (
+              <a 
+                href={audioUrl} 
+                download="pixelbeats_original.mp3" 
+                className="text-slate-400 hover:text-white transition-colors"
+                title="Download Original"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            )}
+          </div>
           <AudioVisualizer audioUrl={audioUrl} color="#94a3b8" />
         </div>
         
         <div className="flex flex-col gap-2">
-          <h3 className="pixel-font text-primary mb-2 flex items-center gap-2">
-            8-BIT CONVERTED
-            {status === 'converting' && <span className="animate-pulse text-xs text-amber-400">PROCESSING...</span>}
-          </h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="pixel-font text-primary flex items-center gap-2">
+              8-BIT CONVERTED
+              {status === 'converting' && <span className="animate-pulse text-xs text-amber-400">PROCESSING...</span>}
+            </h3>
+            {convertedAudioUrl && (
+              <a 
+                href={convertedAudioUrl} 
+                download="pixelbeats_converted.wav" 
+                className="text-primary hover:text-white transition-colors"
+                title="Download Converted"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            )}
+          </div>
           {convertedAudioUrl ? (
             <AudioVisualizer audioUrl={convertedAudioUrl} color="#8b5cf6" />
           ) : (

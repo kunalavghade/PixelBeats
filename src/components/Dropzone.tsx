@@ -40,7 +40,7 @@ export function Dropzone() {
     [setFile]
   );
 
-  if (file && (status !== 'idle' && status !== 'error')) {
+  if (file && (status === 'extracting' || status === 'converting')) {
     return null; // hide dropzone when processing
   }
 
