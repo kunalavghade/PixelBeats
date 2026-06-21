@@ -3,15 +3,37 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import coreURL from '@ffmpeg/core?url';
 import wasmURL from '@ffmpeg/core/wasm?url';
-import { useAppStore, type Preset } from '../store/useAppStore';
+import { useAppStore, type Preset, type Mode } from '../store/useAppStore';
 
-const presetSampleRates: Record<Preset, string> = {
-  NES: '8000',
-  GameBoy: '11025',
-  Atari: '4000',
-  Arcade: '22050',
-  Custom: '16000',
+type PresetConfig = {
+  rate: number;
+  bits: number;
+  lowpass: number;
+  highpass: number;
 };
+
+const presetConfig: Record<Preset, PresetConfig> = {
+  NES:     { rate: 8000,  bits: 4, lowpass: 2200, highpass: 90 },
+  GameBoy: { rate: 11025, bits: 4, lowpass: 3500, highpass: 100 },
+  Atari:   { rate: 4000,  bits: 3, lowpass: 1500, highpass: 60 },
+  Arcade:  { rate: 22050, bits: 6, lowpass: 6000, highpass: 120 },
+  Custom:  { rate: 16000, bits: 5, lowpass: 4000, highpass: 80 },
+};
+
+function buildFilterChain(cfg: PresetConfig, mode: Mode): string {
+  const filters = [`highpass=f=${cfg.highpass}`];
+  if (mode === 'chiptune') {
+    // Heavy bitcrush + slight tremolo for that "console sample" character.
+    filters.push(`acrusher=bits=${cfg.bits}:samples=2:mode=lin:aa=1`);
+    filters.push(`tremolo=f=8:d=0.18`);
+  } else {
+    // Lo-fi: lighter crush, no tremolo.
+    filters.push(`acrusher=bits=${cfg.bits + 2}:samples=1:mode=lin:aa=1`);
+  }
+  filters.push(`lowpass=f=${cfg.lowpass}`);
+  filters.push(`acompressor=threshold=-18dB:ratio=4:attack=5:release=50`);
+  return filters.join(',');
+}
 
 let ffmpegInstance: FFmpeg | null = null;
 let loadPromise: Promise<FFmpeg> | null = null;
@@ -83,7 +105,7 @@ export function useFFmpeg() {
     }
   };
 
-  const convertAudio = async (fileName: string, preset: Preset, customSettings: { sampleRate: number }) => {
+  const convertAudio = async (fileName: string, preset: Preset, mode: Mode, customSettings: { sampleRate: number }) => {
     if (!isLoaded || !ffmpegInstance) {
       setError('FFmpeg is not loaded yet');
       return;
@@ -96,16 +118,19 @@ export function useFFmpeg() {
       setProgress(0);
 
       const convertedAudioName = 'converted.wav';
-      const sampleRate = preset === 'Custom' ? customSettings.sampleRate.toString() : presetSampleRates[preset];
+      const baseCfg = presetConfig[preset];
+      const cfg: PresetConfig =
+        preset === 'Custom' ? { ...baseCfg, rate: customSettings.sampleRate } : baseCfg;
+      const filterChain = buildFilterChain(cfg, mode);
 
-      // Convert to 8-bit retro sound
       await ffmpeg.exec([
         '-i', fileName,
-        '-vn', // no video
-        '-ac', '1', // mono channel
-        '-acodec', 'pcm_u8', // 8-bit PCM
-        '-ar', sampleRate, // preset sample rate
-        convertedAudioName
+        '-vn',
+        '-af', filterChain,
+        '-ac', '1',
+        '-acodec', 'pcm_u8',
+        '-ar', String(cfg.rate),
+        convertedAudioName,
       ]);
 
       const convertedData = await ffmpeg.readFile(convertedAudioName);

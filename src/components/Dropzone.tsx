@@ -24,9 +24,7 @@ export function Dropzone() {
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragActive(false);
-      // Let user upload again even if done or error
       if (status !== 'idle' && status !== 'done' && status !== 'error' && status !== 'ready_to_convert') return;
-
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const selectedFile = e.dataTransfer.files[0];
         setFile(selectedFile);
@@ -48,49 +46,66 @@ export function Dropzone() {
   );
 
   if (file && (status === 'extracting' || status === 'converting' || status === 'ready_to_convert')) {
-    return null; // hide dropzone when processing or ready
+    return null;
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-center my-8">
-      <div
-        className={cn(
-          "glass-panel w-full max-w-xl p-10 flex flex-col items-center justify-center border-2 border-dashed transition-all duration-300 cursor-pointer group hover:bg-slate-800/80",
-          isDragActive ? "border-primary bg-slate-800/80 scale-105" : "border-slate-600"
-        )}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        onClick={() => document.getElementById('file-upload')?.click()}
-      >
-        <input
-          type="file"
-          id="file-upload"
-          className="hidden"
-          accept="video/mp4,audio/*"
-          onChange={onChange}
-        />
-        
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-primary blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+    <div
+      className={cn('cartridge-slot cursor-pointer flex-1 flex items-center justify-center', isDragActive && 'is-drag')}
+      style={{
+        padding: 'clamp(20px, 4vw, 44px)',
+        minHeight: 'clamp(200px, 32vh, 360px)',
+      }}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onClick={() => document.getElementById('file-upload')?.click()}
+    >
+      <input
+        type="file"
+        id="file-upload"
+        className="hidden"
+        accept="video/mp4,audio/*"
+        onChange={onChange}
+      />
+
+      <div className="relative z-10 flex flex-col items-center justify-center gap-3">
+        <div className="relative float">
+          <div className="absolute inset-0 bg-violet-500 blur-2xl opacity-40" />
           {file ? (
-             <FileAudio className="w-20 h-20 text-accent relative z-10" />
+            <FileAudio className="w-14 h-14 sm:w-16 sm:h-16 text-teal-300 relative z-10" />
           ) : (
-             <UploadCloud className="w-20 h-20 text-primary relative z-10 group-hover:-translate-y-2 transition-transform duration-300" />
+            <UploadCloud className="w-14 h-14 sm:w-16 sm:h-16 text-violet-300 relative z-10" />
           )}
         </div>
 
-        <h3 className="text-2xl mb-2 pixel-font text-white text-center">
-          {file ? file.name : "INSERT COIN (UPLOAD MEDIA)"}
+        <h3
+          className="pixel-font text-white text-center break-all neon-text-primary"
+          style={{
+            fontSize: 'clamp(20px, 3.6vw, 34px)',
+            letterSpacing: '0.18em',
+            lineHeight: 1.1,
+          }}
+        >
+          {file ? (
+            <span className="text-teal-200">{file.name.toUpperCase()}</span>
+          ) : (
+            <span className="insert-shimmer">INSERT CARTRIDGE</span>
+          )}
         </h3>
-        
-        <p className="text-slate-400 text-center text-sm font-medium">
-          {file ? "Click or drag to change file" : "Drag and drop your MP4 or Audio file here, or click to browse"}
+
+        <p
+          className="pixel-font text-slate-400 text-center"
+          style={{ fontSize: 'clamp(11px, 1.4vw, 14px)', letterSpacing: '0.18em' }}
+        >
+          {file ? 'CLICK OR DRAG TO REPLACE FILE' : 'DROP MP4 OR AUDIO • OR CLICK TO BROWSE'}
         </p>
-        
+
         {file && (
-          <div className="mt-4 px-3 py-1 bg-slate-800 rounded text-xs text-slate-300 font-mono">
-            {(file.size / (1024 * 1024)).toFixed(2)} MB
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 pixel-font text-teal-300 tracking-widest"
+               style={{ fontSize: 'clamp(10px, 1.1vw, 12px)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+            {(file.size / (1024 * 1024)).toFixed(2)} MB LOADED
           </div>
         )}
       </div>

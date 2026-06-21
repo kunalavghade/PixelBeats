@@ -1,40 +1,69 @@
 import type React from 'react';
 import { Gamepad2 } from 'lucide-react';
 
-
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen crt-effect relative overflow-x-hidden flex flex-col">
-      {/* Dynamic scanlines animation (CSS) */}
-      <div className="absolute inset-0 pointer-events-none z-40 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] opacity-20"></div>
-      
-      {/* 3D Animated Grid */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="animated-grid"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-0"></div>
-      </div>
+    <div className="stage">
+      <div className="stage-grid" aria-hidden />
+      <div className="stage-particles" aria-hidden />
 
-      <header className="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm z-10 sticky top-0">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Gamepad2 className="w-8 h-8 text-primary animate-pulse" />
-            <h1 className="text-3xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent glow-text">
-              PixelBeats
-            </h1>
+      <main className="relative z-10 flex-1 min-h-0 flex flex-col px-3 sm:px-6 py-4 sm:py-6">
+        <div className="cabinet flex-1 min-h-0 flex flex-col">
+          <span className="rivet tl" aria-hidden />
+          <span className="rivet tr" aria-hidden />
+          <span className="rivet bl" aria-hidden />
+          <span className="rivet br" aria-hidden />
+
+          {/* Marquee */}
+          <div className="marquee mb-3 sm:mb-5">
+            <span className="chase-lights top" aria-hidden />
+            <span className="chase-lights bottom" aria-hidden />
+
+            <div className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
+              <Gamepad2 className="w-6 h-6 sm:w-7 sm:h-7 text-violet-300" />
+              <h1
+                className="pixel-font text-white neon-flicker"
+                style={{
+                  fontSize: 'clamp(28px, 6vw, 56px)',
+                  letterSpacing: '0.18em',
+                }}
+              >
+                PIXELBEATS
+              </h1>
+              <span className="power-led" aria-hidden />
+            </div>
+            <p
+              className="pixel-font text-violet-200/80 mt-1 relative z-10"
+              style={{
+                fontSize: 'clamp(10px, 1.2vw, 13px)',
+                letterSpacing: '0.4em',
+              }}
+            >
+              ★ 8-BIT AUDIO ARCADE ★ INSERT MEDIA TO PLAY ★
+            </p>
           </div>
-          <div className="text-sm text-slate-400 pixel-font tracking-widest hidden sm:block">
-            V 1.0.0 // 8-BIT CONVERTER
+
+          {/* CRT screen */}
+          <div className="crt-screen flex-1 min-h-0 flex flex-col">
+            <div className="crt-content flex flex-col">
+              {children}
+            </div>
+          </div>
+
+          {/* Cabinet base */}
+          <div
+            className="mt-3 sm:mt-5 px-1 flex flex-col sm:flex-row items-center justify-between gap-1 pixel-font text-slate-500"
+            style={{
+              fontSize: 'clamp(10px, 1.1vw, 12px)',
+              letterSpacing: '0.2em',
+            }}
+          >
+            <span>© PIXELBEATS ARCADE</span>
+            <span>100% IN-BROWSER • NO UPLOADS</span>
+            <span>V 1.0.0</span>
           </div>
         </div>
-      </header>
-
-      <main className="flex-1 w-full max-w-5xl mx-auto p-6 z-10 flex flex-col">
-        {children}
       </main>
-
-      <footer className="p-6 text-center text-slate-500 text-sm pixel-font z-10">
-        <p>ALL PROCESSING RUNS LOCALLY. NO FILES ARE UPLOADED TO CLOUD.</p>
-      </footer>
     </div>
   );
 }
