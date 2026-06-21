@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { Play, Settings2, Download } from 'lucide-react';
-import { useAppStore, Preset } from '../store/useAppStore';
+import { useAppStore, type Preset } from '../store/useAppStore';
 import { useFFmpeg } from '../hooks/useFFmpeg';
 import { cn } from '../utils';
 

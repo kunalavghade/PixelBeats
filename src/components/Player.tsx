@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Volume2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 function AudioVisualizer({ audioUrl, color }: { audioUrl: string | null; color: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
   const contextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);

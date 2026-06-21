@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import { useAppStore, Preset } from '../store/useAppStore';
+import { useAppStore, type Preset } from '../store/useAppStore';
 
 const presetSampleRates: Record<Preset, string> = {
   NES: '8000',
@@ -68,7 +68,7 @@ export function useFFmpeg() {
       // Extract original audio for preview
       await ffmpeg.exec(['-i', fileName, '-vn', '-acodec', 'libmp3lame', '-q:a', '2', originalAudioName]);
       const originalData = await ffmpeg.readFile(originalAudioName);
-      const originalBlob = new Blob([(originalData as Uint8Array).buffer], { type: 'audio/mpeg' });
+      const originalBlob = new Blob([new Uint8Array(originalData as Uint8Array)], { type: 'audio/mpeg' });
       setAudioUrl(URL.createObjectURL(originalBlob));
 
       setStatus('converting');
@@ -88,7 +88,7 @@ export function useFFmpeg() {
       ]);
 
       const convertedData = await ffmpeg.readFile(convertedAudioName);
-      const convertedBlob = new Blob([(convertedData as Uint8Array).buffer], { type: 'audio/wav' });
+      const convertedBlob = new Blob([new Uint8Array(convertedData as Uint8Array)], { type: 'audio/wav' });
       setConvertedAudioUrl(URL.createObjectURL(convertedBlob));
 
       setStatus('done');

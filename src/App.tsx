@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Layout } from './components/Layout';
 import { Dropzone } from './components/Dropzone';
 import { Controls } from './components/Controls';

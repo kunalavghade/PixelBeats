@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Activity, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
